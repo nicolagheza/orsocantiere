@@ -30,7 +30,7 @@ export async function createCliente(formData: FormData) {
     referente: (rawData.referente as string) || null,
     codice_fiscale: (rawData.codice_fiscale as string) || null,
     sconto_predefinito: Number(rawData.sconto_predefinito) || null,
-    metodo_di_pagamento_predefinito: rawData.metodo_di_pagamento_predefinit as string || null,
+    metodo_di_pagamento_predefinito: rawData.metodo_di_pagamento_predefinito as string || null,
   }
 
   const { error } = await supabase
