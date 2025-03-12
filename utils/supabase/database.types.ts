@@ -7,8 +7,62 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      cantieri: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          id: number
+          nome: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          id?: number
+          nome?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          id?: number
+          nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cantieri_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clienti"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clienti: {
         Row: {
           aliquote_iva: number | null
@@ -75,6 +129,57 @@ export type Database = {
           sconto_predefinito?: number | null
           telefono?: string | null
           tipologia?: string | null
+        }
+        Relationships: []
+      }
+      dipendenti: {
+        Row: {
+          cognome: string | null
+          costo_orario: number | null
+          created_at: string
+          id: string
+          nome: string | null
+        }
+        Insert: {
+          cognome?: string | null
+          costo_orario?: number | null
+          created_at?: string
+          id?: string
+          nome?: string | null
+        }
+        Update: {
+          cognome?: string | null
+          costo_orario?: number | null
+          created_at?: string
+          id?: string
+          nome?: string | null
+        }
+        Relationships: []
+      }
+      tecnici: {
+        Row: {
+          cognome: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          telefono: string | null
+          via: string | null
+        }
+        Insert: {
+          cognome?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          telefono?: string | null
+          via?: string | null
+        }
+        Update: {
+          cognome?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          telefono?: string | null
+          via?: string | null
         }
         Relationships: []
       }

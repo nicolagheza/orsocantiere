@@ -1,8 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import ClientiTable from "./components/ClientiTable";
+import DipendentiTable from "./components/DipendentiTable";
 
-export default async function Clienti() {
+export default async function Dipendenti() {
   const supabase = await createClient();
 
   // Fetch user from Supabase auth
@@ -14,9 +14,8 @@ export default async function Clienti() {
     redirect("/sign-in");
   }
 
-  // Fetch data clienti
-  const { data: clienti = [] } = await supabase.from("clienti").select();
+  // Fetch data dipendenti
+  const { data: dipendenti = [] } = await supabase.from("dipendenti").select();
 
-  // Pass data to the client component
-  return <ClientiTable data={clienti ?? []} />;
+  return <DipendentiTable data={dipendenti ?? []} />;
 }

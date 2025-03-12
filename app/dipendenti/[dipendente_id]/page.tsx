@@ -1,49 +1,52 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { ClienteDetails } from "../components/ClienteDetails";
-import { ClienteForm } from "../components/ClienteForm";
+import { DipendenteDetails } from "../components/DipendenteDetails";
+import { DipendenteForm } from "../components/DipendenteForm";
 
 export default async function Page({
   params,
 }: {
-  params: Promise<{ cliente_id: string }>;
+  params: Promise<{ dipendente_id: string }>;
 }) {
-  const cliente_id = (await params).cliente_id;
+  const dipendente_id = (await params).dipendente_id;
   const supabase = await createClient();
 
-  if (cliente_id === "new") {
+  if (dipendente_id === "new") {
     return (
       <div className="flex-1 w-full flex flex-col gap-6">
         <Link
-          href="/clienti"
+          href="/dipendenti"
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Indietro
         </Link>
-        <ClienteForm />
+        <DipendenteForm />
       </div>
     );
   }
 
-  const { data } = await supabase.from("clienti").select().eq("id", cliente_id);
-  const cliente = data?.[0];
+  const { data } = await supabase
+    .from("dipendenti")
+    .select()
+    .eq("id", dipendente_id);
+  const dipendente = data?.[0];
 
-  if (!cliente) {
-    return <div>Cliente non trovato</div>;
+  if (!dipendente) {
+    return <div>Dipendente non trovato</div>;
   }
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6">
       <Link
-        href="/clienti"
+        href="/dipendenti"
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Indietro
       </Link>
-      <ClienteDetails cliente={cliente} />
+      <DipendenteDetails dipendente={dipendente} />
     </div>
   );
 }
