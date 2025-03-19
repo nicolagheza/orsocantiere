@@ -9,7 +9,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Gestionale EdilMabac",
+  title: "ERP",
   description: "v0.0.1",
 };
 
@@ -26,7 +26,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-
         <main className="min-h-screen flex flex-col items-center">
           <div className="flex-1 w-full flex flex-col gap-20 items-center">
             <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
@@ -37,14 +36,10 @@ export default function RootLayout({
                 <HeaderAuth />
               </div>
             </nav>
-            <div className="flex flex-col gap-20 max-w-5xl p-5">
-              {children}
-            </div>
+            <div className="flex flex-col gap-20 max-w-5xl p-5">{children}</div>
 
             <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-              <p>
-                Gestionale EdilMabac - v0.0.1
-              </p>
+              <p>undefined - v0.0.1</p>
             </footer>
           </div>
         </main>

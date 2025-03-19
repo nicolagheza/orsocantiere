@@ -13,7 +13,7 @@ import {
   Wrench,
   Building2,
   ClipboardList,
-  Clock,
+  Hammer,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -29,11 +29,13 @@ export default async function Dashboard() {
   }
 
   // Fetch counts from different tables
-  const [clientiCount, dipendentiCount, tecniciCount] = await Promise.all([
-    supabase.from("clienti").select("id", { count: "exact", head: true }),
-    supabase.from("dipendenti").select("id", { count: "exact", head: true }),
-    supabase.from("tecnici").select("id", { count: "exact", head: true }),
-  ]);
+  const [cantieriCount, clientiCount, dipendentiCount, tecniciCount] =
+    await Promise.all([
+      supabase.from("cantieri").select("id", { count: "exact", head: true }),
+      supabase.from("clienti").select("id", { count: "exact", head: true }),
+      supabase.from("dipendenti").select("id", { count: "exact", head: true }),
+      supabase.from("tecnici").select("id", { count: "exact", head: true }),
+    ]);
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8">
@@ -52,6 +54,27 @@ export default async function Dashboard() {
       <section>
         <h2 className="text-2xl font-bold mb-4">Moduli</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Cantieri Card */}
+          <Link href="/cantieri" className="no-underline text-foreground">
+            <Card className="h-full transition-all hover:shadow-md hover:border-blue-300">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl">Cantieri</CardTitle>
+                  <Hammer className="h-8 w-8 text-purple-500" />
+                </div>
+                <CardDescription>Gestisci i cantieri attivi</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <p className="text-3xl font-bold text-purple-600">
+                    {cantieriCount.count || 0}
+                  </p>
+                  <span className="text-sm text-gray-500">Cantieri totali</span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           {/* Clienti Card */}
           <Link href="/clienti" className="no-underline text-foreground">
             <Card className="h-full transition-all hover:shadow-md hover:border-blue-300">
@@ -134,6 +157,15 @@ export default async function Dashboard() {
             </Card>
           </Link>
 
+          <Link href="/cantieri/new">
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Hammer className="h-5 w-5 text-purple-500" />
+                <span>Nuovo Cantiere</span>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link href="/dipendenti/new">
             <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
               <CardContent className="p-4 flex items-center gap-3">
@@ -151,13 +183,6 @@ export default async function Dashboard() {
               </CardContent>
             </Card>
           </Link>
-
-          <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
-            <CardContent className="p-4 flex items-center gap-3">
-              <ClipboardList className="h-5 w-5 text-purple-500" />
-              <span>Rapporto Attività</span>
-            </CardContent>
-          </Card>
         </div>
       </section>
 

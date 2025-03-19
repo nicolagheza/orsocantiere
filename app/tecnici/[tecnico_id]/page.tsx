@@ -7,9 +7,9 @@ import { TecnicoForm } from "../components/TecnicoForm";
 export default async function Page({
   params,
 }: {
-  params: { tecnico_id: string };
+  params: Promise<{ tecnico_id: string }>;
 }) {
-  const tecnico_id = params.tecnico_id;
+  const tecnico_id = (await params).tecnico_id;
   const supabase = await createClient();
 
   if (tecnico_id === "new") {
