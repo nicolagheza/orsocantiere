@@ -38,19 +38,19 @@ export type Database = {
         Row: {
           cliente_id: string | null
           created_at: string
-          id: number
+          id: string
           nome: string | null
         }
         Insert: {
           cliente_id?: string | null
           created_at?: string
-          id?: number
+          id?: string
           nome?: string | null
         }
         Update: {
           cliente_id?: string | null
           created_at?: string
-          id?: number
+          id?: string
           nome?: string | null
         }
         Relationships: [
@@ -59,6 +59,66 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clienti"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cantieri_dipendenti: {
+        Row: {
+          cantieri_id: string
+          dipendenti_id: string
+        }
+        Insert: {
+          cantieri_id: string
+          dipendenti_id: string
+        }
+        Update: {
+          cantieri_id?: string
+          dipendenti_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cantieri_dipendenti_cantieri_id_fkey"
+            columns: ["cantieri_id"]
+            isOneToOne: false
+            referencedRelation: "cantieri"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cantieri_dipendenti_dipendenti_id_fkey"
+            columns: ["dipendenti_id"]
+            isOneToOne: false
+            referencedRelation: "dipendenti"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cantieri_tecnici: {
+        Row: {
+          cantieri_id: string
+          tecnici_id: string
+        }
+        Insert: {
+          cantieri_id: string
+          tecnici_id: string
+        }
+        Update: {
+          cantieri_id?: string
+          tecnici_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cantieri_tecnici_cantieri_id_fkey"
+            columns: ["cantieri_id"]
+            isOneToOne: false
+            referencedRelation: "cantieri"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cantieri_tecnici_tecnici_id_fkey"
+            columns: ["tecnici_id"]
+            isOneToOne: false
+            referencedRelation: "tecnici"
             referencedColumns: ["id"]
           },
         ]

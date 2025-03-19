@@ -1,16 +1,15 @@
-'use server'
+"use server";
 
-import { Database } from '@/utils/supabase/database.types'
-import { createClient } from '@/utils/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { Database } from "@/utils/supabase/database.types";
+import { createClient } from "@/utils/supabase/server";
+import { revalidatePath } from "next/cache";
 
-type ClienteInsert = Database['public']['Tables']['clienti']['Insert']
+type ClienteInsert = Database["public"]["Tables"]["clienti"]["Insert"];
 
 export async function createCliente(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const rawData = Object.fromEntries(formData)
+  const rawData = Object.fromEntries(formData);
 
   const cliente: ClienteInsert = {
     denominazione: rawData.denominazione as string,
@@ -30,17 +29,15 @@ export async function createCliente(formData: FormData) {
     referente: (rawData.referente as string) || null,
     codice_fiscale: (rawData.codice_fiscale as string) || null,
     sconto_predefinito: Number(rawData.sconto_predefinito) || null,
-    metodo_di_pagamento_predefinito: rawData.metodo_di_pagamento_predefinito as string || null,
-  }
+    metodo_di_pagamento_predefinito:
+      (rawData.metodo_di_pagamento_predefinito as string) || null,
+  };
 
-  const { error } = await supabase
-    .from('clienti')
-    .insert(cliente)
+  const { error } = await supabase.from("clienti").insert(cliente);
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  revalidatePath('/clienti')
-  redirect('/clienti')
+  revalidatePath("/clienti");
 }
