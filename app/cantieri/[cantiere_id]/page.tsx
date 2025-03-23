@@ -40,6 +40,11 @@ export default async function Page({
     .eq("id", cantiere_id)
     .single();
 
+  //FIX:
+  //const { data: dipendenti, error: dipendentiError } = await supabase
+  //  .from(...)
+  //
+
   if (cantiereError || !cantiere) {
     console.error("Error fetching cantiere:", cantiereError);
     notFound();
