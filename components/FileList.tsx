@@ -1,4 +1,7 @@
-// components/FileList.js
+// components/FileList.tsx
+// Written by Nicola Gheza 2025
+// https://nicolagheza.com
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 

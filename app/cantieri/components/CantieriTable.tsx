@@ -41,7 +41,7 @@ const CantieriTable: React.FC<CantieriTableProps> = ({ data }) => {
         cell: (info) => {
           // Special handling for cliente_id to possibly show related client info
           if (key === "cliente_id" && info.getValue()) {
-            return info.row.original.cliente?.denominazione || "-";
+            return (info.row.original as any).cliente?.denominazione || "-";
           }
           return info.getValue()?.toString() || "-";
         },

@@ -19,7 +19,7 @@ export async function createTecnico(formData: FormData) {
 
   if (error) {
     console.error("Error inserting tecnico:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/tecnici");
@@ -42,7 +42,7 @@ export async function updateTecnico(formData: FormData) {
 
   if (error) {
     console.error("Error updating tecnico:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/tecnici");
@@ -56,7 +56,7 @@ export async function deleteTecnico(id: string) {
 
   if (error) {
     console.error("Error deleting tecnico:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/tecnici");

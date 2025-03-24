@@ -19,7 +19,7 @@ export async function createDipendente(formData: FormData) {
 
   if (error) {
     console.error("Error inserting dipendente:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/dipendenti");
@@ -45,7 +45,7 @@ export async function updateDipendente(formData: FormData) {
 
   if (error) {
     console.error("Error updating dipendente:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/dipendenti");
@@ -59,7 +59,7 @@ export async function deleteDipendente(id: string) {
 
   if (error) {
     console.error("Error deleting dipendente:", error);
-    return { success: false, error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/dipendenti");

@@ -1,8 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { createTecnico } from "../actions";
+import { createTecnico, updateTecnico } from "../actions";
 import { useFormStatus } from "react-dom";
+import { Tables } from "@/utils/supabase/database.types";
+
+// Define props interface
+interface TecnicoFormProps {
+  tecnico?: Tables<"tecnici">; // Make it optional for new technician case
+  isEditing?: boolean;
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -12,12 +19,17 @@ function SubmitButton() {
     </Button>
   );
 }
-
-export function TecnicoForm() {
+export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
   return (
     <div>
-      <h1 className="text-2xl mb-6">Nuovo Tecnico</h1>
-      <form action={createTecnico} className="space-y-6">
+      <h1 className="text-2xl mb-6">
+        {isEditing ? "Modifica Tecnico" : "Nuovo Tecnico"}
+      </h1>
+      <form
+        action={isEditing ? updateTecnico : createTecnico}
+        className="space-y-6"
+      >
+        {" "}
         {/* Anagrafica */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Anagrafica</h2>
@@ -31,6 +43,7 @@ export function TecnicoForm() {
                 type="text"
                 name="nome"
                 id="nome"
+                defaultValue={tecnico?.nome || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -49,7 +62,6 @@ export function TecnicoForm() {
             </div>
           </div>
         </div>
-
         {/* Contatti */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Contatti</h2>
@@ -79,7 +91,6 @@ export function TecnicoForm() {
             </div>
           </div>
         </div>
-
         {/* Indirizzo */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Indirizzo</h2>
@@ -95,7 +106,6 @@ export function TecnicoForm() {
             />
           </div>
         </div>
-
         <SubmitButton />
       </form>
     </div>
