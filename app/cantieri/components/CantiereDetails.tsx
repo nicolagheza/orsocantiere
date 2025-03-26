@@ -1,9 +1,13 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/utils/supabase/database.types";
-import { Building2, Briefcase, Users, User, Calendar } from "lucide-react";
+import { Building2, Briefcase, Users, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import FileUploader from "@/components/FileUploader";
+import FileList from "@/components/FileList";
 
 type Cliente = Tables<"clienti">;
 type Cantiere = Tables<"cantieri">;
@@ -113,6 +117,9 @@ export function CantiereDetails({
           </div>
         </CardContent>
       </Card>
+
+      <FileUploader />
+      <FileList />
     </div>
   );
 }
