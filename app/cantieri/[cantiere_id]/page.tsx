@@ -14,7 +14,7 @@ export default async function Page({
   const supabase = await createClient();
 
   // Fetch all dipendenti and tecnici for the form
-  const { data: dipendenti, error: dipendentiError } = await supabase
+  const { data: allDipendenti, error: dipendentiError } = await supabase
     .from("dipendenti")
     .select("*")
     .order("cognome", { ascending: true });
@@ -23,7 +23,7 @@ export default async function Page({
     console.error("Error fetching dipendenti:", dipendentiError);
   }
 
-  const { data: tecnici, error: tecniciError } = await supabase
+  const { data: allTecnici, error: tecniciError } = await supabase
     .from("tecnici")
     .select("*")
     .order("cognome", { ascending: true });
@@ -43,7 +43,10 @@ export default async function Page({
           <ArrowLeft className="w-4 h-4" />
           Indietro
         </Link>
-        <CantiereForm dipendenti={dipendenti || []} tecnici={tecnici || []} />
+        <CantiereForm
+          dipendenti={allDipendenti || []}
+          tecnici={allTecnici || []}
+        />
       </div>
     );
   }
@@ -95,11 +98,19 @@ export default async function Page({
   const assignedDipendentiIds =
     cantiereDipendenti?.map((d) => d.dipendenti_id) || [];
   const assignedDipendenti =
-    dipendenti?.filter((d) => assignedDipendentiIds.includes(d.id)) || [];
+    allDipendenti?.filter((d) => assignedDipendentiIds.includes(d.id)) || [];
+
+  // Get unassigned dipendenti
+  const unassignedDipendenti =
+    allDipendenti?.filter((d) => !assignedDipendentiIds.includes(d.id)) || [];
 
   const assignedTecniciIds = cantiereTecnici?.map((t) => t.tecnici_id) || [];
   const assignedTecnici =
-    tecnici?.filter((t) => assignedTecniciIds.includes(t.id)) || [];
+    allTecnici?.filter((t) => assignedTecniciIds.includes(t.id)) || [];
+
+  // Get unassigned tecnici
+  const unassignedTecnici =
+    allTecnici?.filter((t) => !assignedTecniciIds.includes(t.id)) || [];
 
   return (
     <div className="container mx-auto py-10">
@@ -113,8 +124,10 @@ export default async function Page({
       <h1 className="text-2xl font-bold mb-6">Dettagli Cantiere</h1>
       <CantiereDetails
         cantiere={cantiere}
-        dipendenti={assignedDipendenti}
-        tecnici={assignedTecnici}
+        assignedDipendenti={assignedDipendenti}
+        unassignedDipendenti={unassignedDipendenti}
+        assignedTecnici={assignedTecnici}
+        unassignedTecnici={unassignedTecnici}
       />
     </div>
   );

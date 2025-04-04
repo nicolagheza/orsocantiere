@@ -27,6 +27,7 @@ export default async function Page({
     );
   }
 
+  // Fetch basic dipendente data
   const { data } = await supabase
     .from("dipendenti")
     .select()
@@ -35,6 +36,43 @@ export default async function Page({
 
   if (!dipendente) {
     return <div>Dipendente non trovato</div>;
+  }
+
+  // Fetch cantieri associated with this dipendente
+  const { data: cantiereDipendenti, error: cantiereDipendentiError } =
+    await supabase
+      .from("cantieri_dipendenti")
+      .select("cantieri_id")
+      .eq("dipendenti_id", dipendente_id);
+
+  if (cantiereDipendentiError) {
+    console.error(
+      "Error fetching cantieri for dipendente:",
+      cantiereDipendentiError,
+    );
+  }
+
+  // Get the list of cantiere IDs
+  const cantiereIds = cantiereDipendenti?.map((cd) => cd.cantieri_id) || [];
+
+  // Fetch the cantieri details if there are any IDs
+  let cantieri = [];
+  if (cantiereIds.length > 0) {
+    const { data: cantieriData, error: cantieriError } = await supabase
+      .from("cantieri")
+      .select(
+        `
+        *,
+        cliente:clienti(id, denominazione)
+      `,
+      )
+      .in("id", cantiereIds);
+
+    if (cantieriError) {
+      console.error("Error fetching cantieri details:", cantieriError);
+    } else {
+      cantieri = cantieriData || [];
+    }
   }
 
   return (
@@ -46,7 +84,7 @@ export default async function Page({
         <ArrowLeft className="w-4 h-4" />
         Indietro
       </Link>
-      <DipendenteDetails dipendente={dipendente} />
+      <DipendenteDetails dipendente={dipendente} cantieri={cantieri} />
     </div>
   );
 }

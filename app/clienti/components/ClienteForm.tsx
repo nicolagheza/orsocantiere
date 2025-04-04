@@ -1,29 +1,32 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { createCliente } from '../actions'
-import { useFormStatus } from 'react-dom'
+import { Button } from "@/components/ui/button";
+import { createCliente } from "../actions";
+import { useFormStatus } from "react-dom";
 
 function SubmitButton() {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? 'Salvataggio...' : 'Salva Cliente'}
+      {pending ? "Salvataggio..." : "Salva Cliente"}
     </Button>
-  )
+  );
 }
 
 export function ClienteForm() {
   return (
     <div>
-      <h1 className='text-2xl mb-6'>Nuovo Cliente</h1>
+      <h1 className="text-2xl mb-6">Nuovo Cliente</h1>
       <form action={createCliente} className="space-y-6">
         {/* Anagrafica */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Anagrafica</h2>
           <div className="grid gap-6 md:grid-cols-3">
             <div>
-              <label htmlFor="denominazione" className="block text-sm font-medium">
+              <label
+                htmlFor="denominazione"
+                className="block text-sm font-medium"
+              >
                 Denominazione
               </label>
               <input
@@ -48,11 +51,35 @@ export function ClienteForm() {
               >
                 <option value="Azienda">Azienda</option>
                 <option value="Privato">Privato</option>
+                <option value="Pubblica Amministrazione">
+                  Pubblica Amministrazione
+                </option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="partita_iva" className="block text-sm font-medium">
+              <label
+                htmlFor="data_di_nascita"
+                className="block text-sm font-medium"
+              >
+                Data di Nascita
+              </label>
+              <input
+                type="date"
+                name="data_di_nascita"
+                id="data_di_nascita"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Opzionale, per persone fisiche
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="partita_iva"
+                className="block text-sm font-medium"
+              >
                 Partita IVA
               </label>
               <input
@@ -114,7 +141,10 @@ export function ClienteForm() {
           <h2 className="text-lg font-medium">Fatturazione</h2>
           <div className="grid gap-6 md:grid-cols-3">
             <div>
-              <label htmlFor="codice_destinatario_sdi" className="block text-sm font-medium">
+              <label
+                htmlFor="codice_destinatario_sdi"
+                className="block text-sm font-medium"
+              >
                 Codice SDI
               </label>
               <input
@@ -127,7 +157,10 @@ export function ClienteForm() {
             </div>
 
             <div>
-              <label htmlFor="aliquote_iva" className="block text-sm font-medium">
+              <label
+                htmlFor="aliquote_iva"
+                className="block text-sm font-medium"
+              >
                 Aliquota IVA (%)
               </label>
               <input
@@ -143,7 +176,10 @@ export function ClienteForm() {
             </div>
 
             <div>
-              <label htmlFor="sconto_predefinito" className="block text-sm font-medium">
+              <label
+                htmlFor="sconto_predefinito"
+                className="block text-sm font-medium"
+              >
                 Sconto predefinito (%)
               </label>
               <input
@@ -158,7 +194,10 @@ export function ClienteForm() {
             </div>
 
             <div>
-              <label htmlFor="metodo_di_pagamento_predefinito" className="block text-sm font-medium">
+              <label
+                htmlFor="metodo_di_pagamento_predefinito"
+                className="block text-sm font-medium"
+              >
                 Metodo di pagamento predefinito
               </label>
               <select
@@ -264,5 +303,5 @@ export function ClienteForm() {
         <SubmitButton />
       </form>
     </div>
-  )
+  );
 }

@@ -2,12 +2,28 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/utils/supabase/database.types";
-import { Building2, Briefcase, Users, Calendar } from "lucide-react";
+import { Building2, Briefcase, Users, Calendar, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import FileUploader from "@/components/FileUploader";
 import FileList from "@/components/FileList";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
+import {
+  addDipendenteToCantiere,
+  removeDipendenteFromCantiere,
+  addTecnicoToCantiere,
+  removeTecnicoFromCantiere,
+} from "../actions";
+import { useRouter } from "next/navigation";
 
 type Cliente = Tables<"clienti">;
 type Cantiere = Tables<"cantieri">;
@@ -18,20 +34,93 @@ interface CantiereDetailsProps {
   cantiere: Cantiere & {
     cliente?: Pick<Cliente, "id" | "denominazione"> | null;
   };
-  tecnici?: Tecnico[];
-  dipendenti?: Dipendente[];
-  // You can add more related entities as needed
+  assignedTecnici?: Tecnico[];
+  unassignedTecnici?: Tecnico[];
+  assignedDipendenti?: Dipendente[];
+  unassignedDipendenti?: Dipendente[];
 }
 
 export function CantiereDetails({
   cantiere,
-  tecnici = [],
-  dipendenti = [],
+  assignedTecnici = [],
+  unassignedTecnici = [],
+  assignedDipendenti = [],
+  unassignedDipendenti = [],
 }: CantiereDetailsProps) {
+  const router = useRouter();
+  const [selectedDipendente, setSelectedDipendente] = useState<string>("");
+  const [selectedTecnico, setSelectedTecnico] = useState<string>("");
+  const [isAddingDipendente, setIsAddingDipendente] = useState(false);
+  const [isAddingTecnico, setIsAddingTecnico] = useState(false);
+  const [loadingDipendenti, setLoadingDipendenti] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [loadingTecnici, setLoadingTecnici] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   // Format the creation date
   const formattedDate = cantiere.created_at
     ? format(new Date(cantiere.created_at), "d MMMM yyyy", { locale: it })
     : "Data non disponibile";
+
+  const handleAddDipendente = async () => {
+    if (!selectedDipendente) return;
+
+    try {
+      setIsAddingDipendente(true);
+      await addDipendenteToCantiere(cantiere.id, selectedDipendente);
+      setSelectedDipendente("");
+      router.refresh();
+    } catch (error) {
+      console.error("Error adding dipendente:", error);
+      alert("Si è verificato un errore durante l'aggiunta del dipendente.");
+    } finally {
+      setIsAddingDipendente(false);
+    }
+  };
+
+  const handleRemoveDipendente = async (dipendenteId: string) => {
+    try {
+      setLoadingDipendenti((prev) => ({ ...prev, [dipendenteId]: true }));
+      await removeDipendenteFromCantiere(cantiere.id, dipendenteId);
+      router.refresh();
+    } catch (error) {
+      console.error("Error removing dipendente:", error);
+      alert("Si è verificato un errore durante la rimozione del dipendente.");
+    } finally {
+      setLoadingDipendenti((prev) => ({ ...prev, [dipendenteId]: false }));
+    }
+  };
+
+  const handleAddTecnico = async () => {
+    if (!selectedTecnico) return;
+
+    try {
+      setIsAddingTecnico(true);
+      await addTecnicoToCantiere(cantiere.id, selectedTecnico);
+      setSelectedTecnico("");
+      router.refresh();
+    } catch (error) {
+      console.error("Error adding tecnico:", error);
+      alert("Si è verificato un errore durante l'aggiunta del tecnico.");
+    } finally {
+      setIsAddingTecnico(false);
+    }
+  };
+
+  const handleRemoveTecnico = async (tecnicoId: string) => {
+    try {
+      setLoadingTecnici((prev) => ({ ...prev, [tecnicoId]: true }));
+      await removeTecnicoFromCantiere(cantiere.id, tecnicoId);
+      router.refresh();
+    } catch (error) {
+      console.error("Error removing tecnico:", error);
+      alert("Si è verificato un errore durante la rimozione del tecnico.");
+    } finally {
+      setLoadingTecnici((prev) => ({ ...prev, [tecnicoId]: false }));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -65,56 +154,161 @@ export function CantiereDetails({
               <p className="text-sm text-gray-500">{formattedDate}</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="flex items-center space-x-4">
-            <Users className="h-5 w-5 text-gray-500" />
-            <div>
-              <p className="text-sm font-medium">Tecnici Assegnati</p>
-              {tecnici.length > 0 ? (
-                <div className="space-y-2">
-                  {tecnici.map((tecnico) => (
-                    <div key={tecnico.id} className="text-sm text-gray-500">
+      {/* Tecnici Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Tecnici Assegnati</CardTitle>
+            <Badge>{assignedTecnici.length}</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add Tecnico Section */}
+          {unassignedTecnici.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Select
+                value={selectedTecnico}
+                onValueChange={setSelectedTecnico}
+              >
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Seleziona tecnico da aggiungere" />
+                </SelectTrigger>
+                <SelectContent>
+                  {unassignedTecnici.map((tecnico) => (
+                    <SelectItem key={tecnico.id} value={tecnico.id}>
                       {tecnico.nome} {tecnico.cognome}
-                      {tecnico.telefono && <span> • {tecnico.telefono}</span>}
-                    </div>
+                    </SelectItem>
                   ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  Nessun tecnico assegnato
-                </p>
-              )}
-              <p className="text-sm font-medium mt-2">
-                Totale: {tecnici.length}
-              </p>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleAddTecnico}
+                disabled={!selectedTecnico || isAddingTecnico}
+                size="sm"
+              >
+                {isAddingTecnico ? "Aggiunta..." : "Aggiungi Tecnico"}
+              </Button>
             </div>
-          </div>
+          )}
 
-          <div className="flex items-center space-x-4">
-            <Briefcase className="h-5 w-5 text-gray-500" />
-            <div>
-              <p className="text-sm font-medium">Dipendenti Assegnati</p>
-              {dipendenti.length > 0 ? (
-                <div className="space-y-2">
-                  {dipendenti.map((dipendente) => (
-                    <div key={dipendente.id} className="text-sm text-gray-500">
-                      {dipendente.nome} {dipendente.cognome}
-                      {dipendente.costo_orario && (
-                        <span> • €{dipendente.costo_orario}/h</span>
-                      )}
-                    </div>
-                  ))}
+          {/* Assigned Tecnici List */}
+          {assignedTecnici.length > 0 ? (
+            <div className="space-y-2">
+              {assignedTecnici.map((tecnico) => (
+                <div
+                  key={tecnico.id}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {tecnico.nome} {tecnico.cognome}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {tecnico.telefono && <span>{tecnico.telefono}</span>}
+                      {tecnico.email && <span> • {tecnico.email}</span>}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRemoveTecnico(tecnico.id)}
+                    disabled={loadingTecnici[tecnico.id]}
+                  >
+                    {loadingTecnici[tecnico.id] ? (
+                      "Rimozione..."
+                    ) : (
+                      <X className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  Nessun dipendente assegnato
-                </p>
-              )}
-              <p className="text-sm font-medium mt-2">
-                Totale: {dipendenti.length}
-              </p>
+              ))}
             </div>
+          ) : (
+            <div className="text-center py-6 text-gray-500">
+              <p>Nessun tecnico assegnato a questo cantiere</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dipendenti Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Dipendenti Assegnati</CardTitle>
+            <Badge>{assignedDipendenti.length}</Badge>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add Dipendente Section */}
+          {unassignedDipendenti.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Select
+                value={selectedDipendente}
+                onValueChange={setSelectedDipendente}
+              >
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Seleziona dipendente da aggiungere" />
+                </SelectTrigger>
+                <SelectContent>
+                  {unassignedDipendenti.map((dipendente) => (
+                    <SelectItem key={dipendente.id} value={dipendente.id}>
+                      {dipendente.nome} {dipendente.cognome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleAddDipendente}
+                disabled={!selectedDipendente || isAddingDipendente}
+                size="sm"
+              >
+                {isAddingDipendente ? "Aggiunta..." : "Aggiungi Dipendente"}
+              </Button>
+            </div>
+          )}
+
+          {/* Assigned Dipendenti List */}
+          {assignedDipendenti.length > 0 ? (
+            <div className="space-y-2">
+              {assignedDipendenti.map((dipendente) => (
+                <div
+                  key={dipendente.id}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {dipendente.nome} {dipendente.cognome}
+                    </p>
+                    {dipendente.costo_orario && (
+                      <p className="text-sm text-gray-500">
+                        Costo orario: €{dipendente.costo_orario}/h
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRemoveDipendente(dipendente.id)}
+                    disabled={loadingDipendenti[dipendente.id]}
+                  >
+                    {loadingDipendenti[dipendente.id] ? (
+                      "Rimozione..."
+                    ) : (
+                      <X className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-gray-500">
+              <p>Nessun dipendente assegnato a questo cantiere</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

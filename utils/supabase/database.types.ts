@@ -128,9 +128,9 @@ export type Database = {
           aliquote_iva: number | null
           cap: string | null
           codice_destinatario_sdi: string | null
-          codice_fiscale: string | null
           comune: string | null
           created_at: string
+          data_di_nascita: string | null
           denominazione: string
           email: string | null
           id: string
@@ -150,9 +150,9 @@ export type Database = {
           aliquote_iva?: number | null
           cap?: string | null
           codice_destinatario_sdi?: string | null
-          codice_fiscale?: string | null
           comune?: string | null
           created_at?: string
+          data_di_nascita?: string | null
           denominazione: string
           email?: string | null
           id?: string
@@ -172,9 +172,9 @@ export type Database = {
           aliquote_iva?: number | null
           cap?: string | null
           codice_destinatario_sdi?: string | null
-          codice_fiscale?: string | null
           comune?: string | null
           created_at?: string
+          data_di_nascita?: string | null
           denominazione?: string
           email?: string | null
           id?: string

@@ -27,10 +27,10 @@ export async function createCliente(formData: FormData) {
     note: (rawData.note as string) || null,
     aliquote_iva: Number(rawData.aliquote_iva) || null,
     referente: (rawData.referente as string) || null,
-    codice_fiscale: (rawData.codice_fiscale as string) || null,
     sconto_predefinito: Number(rawData.sconto_predefinito) || null,
     metodo_di_pagamento_predefinito:
       (rawData.metodo_di_pagamento_predefinito as string) || null,
+    data_di_nascita: (rawData.data_di_nascita as string) || null,
   };
 
   const { error } = await supabase.from("clienti").insert(cliente);
