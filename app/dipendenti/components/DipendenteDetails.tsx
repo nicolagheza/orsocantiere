@@ -8,6 +8,8 @@ import { useState } from "react";
 import { removeDipendenteFromCantiere } from "../actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import FileUploader from "@/components/FileUploader";
+import FileList from "@/components/FileList";
 
 type Dipendente = Tables<"dipendenti">;
 type Cantiere = Tables<"cantieri"> & {
@@ -138,6 +140,20 @@ export function DipendenteDetails({
           )}
         </CardContent>
       </Card>
+
+      {/* File Management Section */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <FileUploader
+          entityType="dipendente"
+          entityId={dipendente.id}
+          entityName={`${dipendente.nome} ${dipendente.cognome}`}
+        />
+        <FileList
+          entityType="dipendente"
+          entityId={dipendente.id}
+          title="Documenti del Dipendente"
+        />
+      </div>
     </div>
   );
 }

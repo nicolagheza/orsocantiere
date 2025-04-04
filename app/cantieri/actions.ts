@@ -51,7 +51,7 @@ export async function addDipendenteToCantiere(
   }
 
   const { error } = await supabase.from("cantieri_dipendenti").insert({
-    cantiere_id,
+    cantieri_id: cantiere_id,
     dipendenti_id: dipendente_id,
   });
 
@@ -111,7 +111,7 @@ export async function addTecnicoToCantiere(
   }
 
   const { error } = await supabase.from("cantieri_tecnici").insert({
-    cantiere_id,
+    cantieri_id: cantiere_id,
     tecnici_id: tecnico_id,
   });
 

@@ -3,6 +3,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { DipendenteDetails } from "../components/DipendenteDetails";
 import { DipendenteForm } from "../components/DipendenteForm";
+import { Tables } from "@/utils/supabase/database.types";
+
+type Cantiere = Tables<"cantieri">;
 
 export default async function Page({
   params,
@@ -56,7 +59,7 @@ export default async function Page({
   const cantiereIds = cantiereDipendenti?.map((cd) => cd.cantieri_id) || [];
 
   // Fetch the cantieri details if there are any IDs
-  let cantieri = [];
+  let cantieri: Cantiere[] = [];
   if (cantiereIds.length > 0) {
     const { data: cantieriData, error: cantieriError } = await supabase
       .from("cantieri")

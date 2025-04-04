@@ -312,8 +312,19 @@ export function CantiereDetails({
         </CardContent>
       </Card>
 
-      <FileUploader />
-      <FileList />
+      {/* File Management Section */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <FileUploader
+          entityType="cantiere"
+          entityId={cantiere.id}
+          entityName={cantiere.nome || "Cantiere"}
+        />
+        <FileList
+          entityType="cantiere"
+          entityId={cantiere.id}
+          title="Documenti del Cantiere"
+        />
+      </div>
     </div>
   );
 }

@@ -62,3 +62,24 @@ export async function deleteTecnico(id: string) {
   revalidatePath("/tecnici");
   redirect("/tecnici");
 }
+
+export async function removeTecnicoFromCantiere(
+  tecnico_id: string,
+  cantiere_id: string,
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("cantieri_tecnici").delete().match({
+    tecnici_id: tecnico_id,
+    cantieri_id: cantiere_id,
+  });
+
+  if (error) {
+    console.error("Error removing dipendente from cantiere:", error);
+    throw new Error(error.message);
+  }
+
+  revalidatePath(`/dipendenti/${tecnico_id}`);
+  revalidatePath(`/cantieri/${cantiere_id}`);
+  return { success: true };
+}

@@ -40,18 +40,21 @@ export type Database = {
           created_at: string
           id: string
           nome: string | null
+          status: string | null
         }
         Insert: {
           cliente_id?: string | null
           created_at?: string
           id?: string
           nome?: string | null
+          status?: string | null
         }
         Update: {
           cliente_id?: string | null
           created_at?: string
           id?: string
           nome?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -213,6 +216,39 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string | null
+        }
+        Relationships: []
+      }
+      files: {
+        Row: {
+          category: string
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          name: string
+          size: number
+          storage_path: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          name: string
+          size: number
+          storage_path: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          name?: string
+          size?: number
+          storage_path?: string
         }
         Relationships: []
       }
