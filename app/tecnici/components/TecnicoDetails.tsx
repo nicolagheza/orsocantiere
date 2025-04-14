@@ -3,13 +3,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tables } from "@/utils/supabase/database.types";
-import { User, Mail, Phone, MapPin, Building2, Briefcase } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Briefcase,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
-import { removeTecnicoFromCantiere } from "../actions";
+import { removeTecnicoFromCantiere, deleteTecnico } from "../actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import FileUploader from "@/components/FileUploader";
 import FileList from "@/components/FileList";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Tecnico = Tables<"tecnici">;
 type Cantiere = Tables<"cantieri"> & {
@@ -30,6 +50,7 @@ export function TecnicoDetails({
 }: TecnicoDetailsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleRemoveFromCantiere = async (cantiereId: string) => {
     try {
@@ -46,12 +67,69 @@ export function TecnicoDetails({
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/tecnici/${tecnico.id}/edit`);
+  };
+
+  const handleDelete = async (formData: FormData) => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteTecnico(formData);
+      if (result.success) {
+        router.push("/tecnici?success=true&action=delete");
+      }
+    } catch (error) {
+      console.error("Error deleting tecnico:", error);
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">
           {tecnico.nome} {tecnico.cognome}
         </h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleEdit}>
+            <Edit className="h-4 w-4 mr-2" />
+            Modifica
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Elimina
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Questa azione non può essere annullata. Questo eliminerà
+                  permanentemente il tecnico "{tecnico.nome} {tecnico.cognome}"
+                  e tutti i dati associati.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annulla</AlertDialogCancel>
+                <form action={handleDelete}>
+                  <input type="hidden" name="id" value={tecnico.id} />
+                  <AlertDialogAction asChild>
+                    <Button
+                      type="submit"
+                      variant="destructive"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Eliminazione..." : "Elimina"}
+                    </Button>
+                  </AlertDialogAction>
+                </form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <Card>

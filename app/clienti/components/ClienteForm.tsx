@@ -1,23 +1,64 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { createCliente } from "../actions";
+import { createCliente, updateCliente } from "../actions";
 import { useFormStatus } from "react-dom";
+import { Tables } from "@/utils/supabase/database.types";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-function SubmitButton() {
+type Cliente = Tables<"clienti">;
+
+function SubmitButton({ isUpdate }: { isUpdate: boolean }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Salvataggio..." : "Salva Cliente"}
+      {pending
+        ? "Salvataggio..."
+        : isUpdate
+          ? "Aggiorna Cliente"
+          : "Salva Cliente"}
     </Button>
   );
 }
 
-export function ClienteForm() {
+interface ClienteFormProps {
+  cliente?: Cliente;
+}
+
+export function ClienteForm({ cliente }: ClienteFormProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isUpdate = !!cliente;
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const result = isUpdate
+        ? await updateCliente(formData)
+        : await createCliente(formData);
+
+      if (result.success) {
+        if (isUpdate) {
+          router.push(`/clienti/${result.id}?success=true&action=update`);
+        } else {
+          router.push(`/clienti?success=true&action=create`);
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
-      <h1 className="text-2xl mb-6">Nuovo Cliente</h1>
-      <form action={createCliente} className="space-y-6">
+      <h1 className="text-2xl mb-6">
+        {isUpdate ? "Modifica Cliente" : "Nuovo Cliente"}
+      </h1>
+      <form action={handleSubmit} className="space-y-6">
+        {isUpdate && <input type="hidden" name="id" value={cliente.id} />}
+
         {/* Anagrafica */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Anagrafica</h2>
@@ -34,6 +75,7 @@ export function ClienteForm() {
                 type="text"
                 name="denominazione"
                 id="denominazione"
+                defaultValue={cliente?.denominazione || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -47,7 +89,7 @@ export function ClienteForm() {
                 name="tipologia"
                 id="tipologia"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                defaultValue="Azienda"
+                defaultValue={cliente?.tipologia || "Azienda"}
               >
                 <option value="Azienda">Azienda</option>
                 <option value="Privato">Privato</option>
@@ -68,6 +110,7 @@ export function ClienteForm() {
                 type="date"
                 name="data_di_nascita"
                 id="data_di_nascita"
+                defaultValue={cliente?.data_di_nascita || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -87,6 +130,7 @@ export function ClienteForm() {
                 type="text"
                 name="partita_iva"
                 id="partita_iva"
+                defaultValue={cliente?.partita_iva || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -106,6 +150,7 @@ export function ClienteForm() {
                 type="email"
                 name="email"
                 id="email"
+                defaultValue={cliente?.email || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -118,6 +163,7 @@ export function ClienteForm() {
                 type="email"
                 name="pec"
                 id="pec"
+                defaultValue={cliente?.pec || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -130,6 +176,7 @@ export function ClienteForm() {
                 type="tel"
                 name="telefono"
                 id="telefono"
+                defaultValue={cliente?.telefono || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -152,6 +199,7 @@ export function ClienteForm() {
                 type="text"
                 name="codice_destinatario_sdi"
                 id="codice_destinatario_sdi"
+                defaultValue={cliente?.codice_destinatario_sdi || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -168,7 +216,7 @@ export function ClienteForm() {
                 type="number"
                 name="aliquote_iva"
                 id="aliquote_iva"
-                defaultValue={22}
+                defaultValue={cliente?.aliquote_iva || 22}
                 min={0}
                 max={100}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
@@ -186,7 +234,7 @@ export function ClienteForm() {
                 type="number"
                 name="sconto_predefinito"
                 id="sconto_predefinito"
-                defaultValue={0}
+                defaultValue={cliente?.sconto_predefinito || 0}
                 min={0}
                 max={100}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
@@ -204,7 +252,7 @@ export function ClienteForm() {
                 name="metodo_di_pagamento_predefinito"
                 id="metodo_di_pagamento_predefinito"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                defaultValue=""
+                defaultValue={cliente?.metodo_di_pagamento_predefinito || ""}
               >
                 <option value="">Seleziona un metodo</option>
                 <option value="bonifico">Bonifico bancario</option>
@@ -227,6 +275,7 @@ export function ClienteForm() {
               type="text"
               name="indirizzo"
               id="indirizzo"
+              defaultValue={cliente?.indirizzo || ""}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>
@@ -241,6 +290,7 @@ export function ClienteForm() {
                 type="text"
                 name="cap"
                 id="cap"
+                defaultValue={cliente?.cap || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -254,6 +304,7 @@ export function ClienteForm() {
                 type="text"
                 name="comune"
                 id="comune"
+                defaultValue={cliente?.comune || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -267,6 +318,7 @@ export function ClienteForm() {
                 type="text"
                 name="provincia"
                 id="provincia"
+                defaultValue={cliente?.provincia || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -280,7 +332,7 @@ export function ClienteForm() {
                 type="text"
                 name="paese"
                 id="paese"
-                defaultValue="Italia"
+                defaultValue={cliente?.paese || "Italia"}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -296,11 +348,12 @@ export function ClienteForm() {
             name="note"
             id="note"
             rows={3}
+            defaultValue={cliente?.note || ""}
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
           />
         </div>
 
-        <SubmitButton />
+        <SubmitButton isUpdate={isUpdate} />
       </form>
     </div>
   );

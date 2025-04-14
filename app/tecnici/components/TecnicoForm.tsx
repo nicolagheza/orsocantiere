@@ -4,32 +4,77 @@ import { Button } from "@/components/ui/button";
 import { createTecnico, updateTecnico } from "../actions";
 import { useFormStatus } from "react-dom";
 import { Tables } from "@/utils/supabase/database.types";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-// Define props interface
-interface TecnicoFormProps {
-  tecnico?: Tables<"tecnici">; // Make it optional for new technician case
-  isEditing?: boolean;
-}
+type Tecnico = Tables<"tecnici">;
 
-function SubmitButton() {
+function SubmitButton({ isUpdate }: { isUpdate: boolean }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Salvataggio..." : "Salva Tecnico"}
+      {pending
+        ? "Salvataggio..."
+        : isUpdate
+          ? "Aggiorna Tecnico"
+          : "Salva Tecnico"}
     </Button>
   );
 }
+
+interface TecnicoFormProps {
+  tecnico?: Tecnico;
+  isEditing?: boolean;
+}
+
 export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isUpdate = !!tecnico || isEditing;
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const result = isUpdate
+        ? await updateTecnico(formData)
+        : await createTecnico(formData);
+
+      if (result.success) {
+        if (isUpdate) {
+          router.push(`/tecnici/${result.id}?success=true&action=update`);
+        } else {
+          router.push(`/tecnici?success=true&action=create`);
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setError(
+        err instanceof Error ? err.message : "Si è verificato un errore",
+      );
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-2xl mb-6">
-        {isEditing ? "Modifica Tecnico" : "Nuovo Tecnico"}
+        {isUpdate ? "Modifica Tecnico" : "Nuovo Tecnico"}
       </h1>
-      <form
-        action={isEditing ? updateTecnico : createTecnico}
-        className="space-y-6"
-      >
-        {" "}
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <form action={handleSubmit} className="space-y-6">
+        {isUpdate && (
+          <input type="hidden" name="id" value={tecnico?.id || ""} />
+        )}
+
         {/* Anagrafica */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Anagrafica</h2>
@@ -57,11 +102,13 @@ export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
                 type="text"
                 name="cognome"
                 id="cognome"
+                defaultValue={tecnico?.cognome || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
           </div>
         </div>
+
         {/* Contatti */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Contatti</h2>
@@ -74,6 +121,7 @@ export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
                 type="email"
                 name="email"
                 id="email"
+                defaultValue={tecnico?.email || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
@@ -86,11 +134,13 @@ export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
                 type="tel"
                 name="telefono"
                 id="telefono"
+                defaultValue={tecnico?.telefono || ""}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
           </div>
         </div>
+
         {/* Indirizzo */}
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Indirizzo</h2>
@@ -102,11 +152,13 @@ export function TecnicoForm({ tecnico, isEditing = false }: TecnicoFormProps) {
               type="text"
               name="via"
               id="via"
+              defaultValue={tecnico?.via || ""}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>
         </div>
-        <SubmitButton />
+
+        <SubmitButton isUpdate={isUpdate} />
       </form>
     </div>
   );

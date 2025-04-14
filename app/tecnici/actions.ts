@@ -2,7 +2,6 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export async function createTecnico(formData: FormData) {
   const supabase = await createClient();
@@ -15,7 +14,10 @@ export async function createTecnico(formData: FormData) {
     via: formData.get("via") as string,
   };
 
-  const { error } = await supabase.from("tecnici").insert([tecnico]);
+  const { error, data } = await supabase
+    .from("tecnici")
+    .insert([tecnico])
+    .select();
 
   if (error) {
     console.error("Error inserting tecnico:", error);
@@ -23,7 +25,9 @@ export async function createTecnico(formData: FormData) {
   }
 
   revalidatePath("/tecnici");
-  redirect("/tecnici");
+
+  // Return success information
+  return { success: true, action: "create", id: data?.[0]?.id };
 }
 
 export async function updateTecnico(formData: FormData) {
@@ -46,11 +50,16 @@ export async function updateTecnico(formData: FormData) {
   }
 
   revalidatePath("/tecnici");
-  redirect("/tecnici");
+  revalidatePath(`/tecnici/${id}`);
+
+  // Return success information
+  return { success: true, action: "update", id };
 }
 
-export async function deleteTecnico(id: string) {
+export async function deleteTecnico(formData: FormData) {
   const supabase = await createClient();
+
+  const id = formData.get("id") as string;
 
   const { error } = await supabase.from("tecnici").delete().eq("id", id);
 
@@ -60,7 +69,9 @@ export async function deleteTecnico(id: string) {
   }
 
   revalidatePath("/tecnici");
-  redirect("/tecnici");
+
+  // Return success information
+  return { success: true, action: "delete" };
 }
 
 export async function removeTecnicoFromCantiere(
@@ -75,11 +86,11 @@ export async function removeTecnicoFromCantiere(
   });
 
   if (error) {
-    console.error("Error removing dipendente from cantiere:", error);
+    console.error("Error removing tecnico from cantiere:", error);
     throw new Error(error.message);
   }
 
-  revalidatePath(`/dipendenti/${tecnico_id}`);
+  revalidatePath(`/tecnici/${tecnico_id}`);
   revalidatePath(`/cantieri/${cantiere_id}`);
   return { success: true };
 }

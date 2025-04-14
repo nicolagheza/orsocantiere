@@ -2,7 +2,6 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export async function createDipendente(formData: FormData) {
   const supabase = await createClient();
@@ -15,7 +14,10 @@ export async function createDipendente(formData: FormData) {
     costo_orario: costo_orario_value ? parseFloat(costo_orario_value) : null,
   };
 
-  const { error } = await supabase.from("dipendenti").insert([dipendente]);
+  const { error, data } = await supabase
+    .from("dipendenti")
+    .insert([dipendente])
+    .select();
 
   if (error) {
     console.error("Error inserting dipendente:", error);
@@ -23,7 +25,8 @@ export async function createDipendente(formData: FormData) {
   }
 
   revalidatePath("/dipendenti");
-  redirect("/dipendenti");
+
+  return { success: true, action: "create", id: data?.[0]?.id };
 }
 
 export async function updateDipendente(formData: FormData) {
@@ -49,11 +52,16 @@ export async function updateDipendente(formData: FormData) {
   }
 
   revalidatePath("/dipendenti");
-  redirect("/dipendenti");
+  revalidatePath(`/dipendenti/${id}`);
+
+  // Return success information
+  return { success: true, action: "update", id };
 }
 
-export async function deleteDipendente(id: string) {
+export async function deleteDipendente(formData: FormData) {
   const supabase = await createClient();
+
+  const id = formData.get("id") as string;
 
   const { error } = await supabase.from("dipendenti").delete().eq("id", id);
 
@@ -63,7 +71,9 @@ export async function deleteDipendente(id: string) {
   }
 
   revalidatePath("/dipendenti");
-  redirect("/dipendenti");
+
+  // Return success information
+  return { success: true, action: "delete" };
 }
 
 export async function removeDipendenteFromCantiere(
