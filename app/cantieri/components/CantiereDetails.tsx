@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/utils/supabase/database.types";
-import { Building2, Briefcase, Users, Calendar, Plus, X } from "lucide-react";
+import { Building2, Calendar, X, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -22,7 +22,19 @@ import {
   removeDipendenteFromCantiere,
   addTecnicoToCantiere,
   removeTecnicoFromCantiere,
+  deleteCantiere,
 } from "../actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 
 type Cliente = Tables<"clienti">;
@@ -52,6 +64,7 @@ export function CantiereDetails({
   const [selectedTecnico, setSelectedTecnico] = useState<string>("");
   const [isAddingDipendente, setIsAddingDipendente] = useState(false);
   const [isAddingTecnico, setIsAddingTecnico] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [loadingDipendenti, setLoadingDipendenti] = useState<{
     [key: string]: boolean;
   }>({});
@@ -63,6 +76,23 @@ export function CantiereDetails({
   const formattedDate = cantiere.created_at
     ? format(new Date(cantiere.created_at), "d MMMM yyyy", { locale: it })
     : "Data non disponibile";
+
+  const handleEdit = () => {
+    router.push(`/cantieri/${cantiere.id}/edit`);
+  };
+
+  const handleDelete = async (formData: FormData) => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteCantiere(formData);
+      if (result.success) {
+        router.push("/cantieri?success=true&action=delete");
+      }
+    } catch (error) {
+      console.error("Error deleting cantiere:", error);
+      setIsDeleting(false);
+    }
+  };
 
   const handleAddDipendente = async () => {
     if (!selectedDipendente) return;
@@ -124,6 +154,50 @@ export function CantiereDetails({
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">{cantiere.nome || "Cantiere senza nome"}</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleEdit}>
+            <Edit className="h-4 w-4 mr-2" />
+            Modifica
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Elimina
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Questa azione non può essere annullata. Questo eliminerà
+                  permanentemente il cantiere "{cantiere.nome}" e tutti i
+                  dati associati.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annulla</AlertDialogCancel>
+                <form action={handleDelete}>
+                  <input type="hidden" name="id" value={cantiere.id} />
+                  <AlertDialogAction asChild>
+                    <Button
+                      type="submit"
+                      variant="destructive"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Eliminazione..." : "Elimina"}
+                    </Button>
+                  </AlertDialogAction>
+                </form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">

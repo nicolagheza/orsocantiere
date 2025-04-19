@@ -1,1 +1,1 @@
-OrsoCantiere - v1.0.0@beta
+OrsoCantiere - v1.0.1@beta

@@ -45,7 +45,7 @@ export default async function Page({
   const { data: cantiereDipendenti, error: cantiereDipendentiError } =
     await supabase
       .from("cantieri_dipendenti")
-      .select("cantieri_id")
+      .select("cantiere_id")
       .eq("dipendenti_id", dipendente_id);
 
   if (cantiereDipendentiError) {

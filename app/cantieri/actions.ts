@@ -1,28 +1,107 @@
 "use server";
 
-import { Database } from "@/utils/supabase/database.types";
+//import { Database } from "@/utils/supabase/database.types";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-type CantiereInsert = Database["public"]["Tables"]["cantieri"]["Insert"];
+//type CantiereInsert = Database["public"]["Tables"]["cantieri"]["Insert"];
+//type CantiereUpdate = Database["public"]["Tables"]["cantieri"]["Update"];
+//
+//export async function createCantiere(formData: FormData) {
+//  const supabase = await createClient();
+//  const rawData = Object.fromEntries(formData);
+//
+//  const cantiere: CantiereInsert = {
+//    nome: rawData.nome as string,
+//    cliente_id: rawData.cliente_id as string,
+//    // Add any additional fields you might want to include
+//  };
+//
+//  const { error, data } = await supabase
+//    .from("cantieri")
+//    .insert(cantiere)
+//    .select();
+//
+//  if (error) {
+//    throw new Error(error.message);
+//  }
+//
+//  revalidatePath("/cantieri");
+//
+//  // Return success with the new cantiere ID
+//  return { success: true, action: "create", id: data?.[0]?.id };
+//}
+//
+//export async function updateCantiere(formData: FormData) {
+//  const supabase = await createClient();
+//  const rawData = Object.fromEntries(formData);
+//  const cantiereId = rawData.id as string;
+//
+//  const cantiere: CantiereUpdate = {
+//    nome: rawData.nome as string,
+//    cliente_id: rawData.cliente_id as string,
+//    // Add any additional fields you might want to include
+//  };
+//
+//  const { data, error } = await supabase
+//    .from("cantieri")
+//    .update(cantiere)
+//    .eq("id", cantiereId)
+//    .select();
+//
+//  console.log("updated data", data);
+//
+//  if (error) {
+//    throw new Error(error.message);
+//  }
+//
+//  revalidatePath("/cantieri");
+//  revalidatePath(`/cantieri/${cantiereId}`);
+//
+//  // Redirect to the detail page with a success message
+//  return { success: true, action: "update", id: cantiereId };
+//}
 
-export async function createCantiere(formData: FormData) {
+export async function deleteCantiere(formData: FormData) {
   const supabase = await createClient();
-  const rawData = Object.fromEntries(formData);
+  const cantiereId = formData.get("id") as string;
 
-  const cantiere: CantiereInsert = {
-    nome: rawData.nome as string,
-    cliente_id: rawData.cliente_id as string,
-    // Add any additional fields you might want to include
-  };
+  // First, delete related records in junction tables
+  const { error: relationError1 } = await supabase
+    .from("cantieri_dipendenti")
+    .delete()
+    .eq("cantieri_id", cantiereId);
 
-  const { error } = await supabase.from("cantieri").insert(cantiere);
+  if (relationError1) {
+    console.error(
+      "Error deleting cantiere_dipendenti relations:",
+      relationError1,
+    );
+  }
+
+  const { error: relationError2 } = await supabase
+    .from("cantieri_tecnici")
+    .delete()
+    .eq("cantieri_id", cantiereId);
+
+  if (relationError2) {
+    console.error("Error deleting cantiere_tecnici relations:", relationError2);
+  }
+
+  // Then delete the cantiere
+  const { error } = await supabase
+    .from("cantieri")
+    .delete()
+    .eq("id", cantiereId);
 
   if (error) {
     throw new Error(error.message);
   }
 
   revalidatePath("/cantieri");
+
+  // Redirect to the list with a success message
+  return { success: true, action: "delete" };
 }
 
 // New action to add a dipendente to a cantiere
@@ -37,7 +116,7 @@ export async function addDipendenteToCantiere(
     .from("cantieri_dipendenti")
     .select()
     .match({
-      cantiere_id,
+      cantieri_id: cantiere_id,
       dipendenti_id: dipendente_id,
     })
     .single();
@@ -72,7 +151,7 @@ export async function removeDipendenteFromCantiere(
   const supabase = await createClient();
 
   const { error } = await supabase.from("cantieri_dipendenti").delete().match({
-    cantiere_id,
+    cantieri_id: cantiere_id,
     dipendenti_id: dipendente_id,
   });
 
@@ -97,7 +176,7 @@ export async function addTecnicoToCantiere(
     .from("cantieri_tecnici")
     .select()
     .match({
-      cantiere_id,
+      cantieri_id: cantiere_id,
       tecnici_id: tecnico_id,
     })
     .single();
@@ -132,7 +211,7 @@ export async function removeTecnicoFromCantiere(
   const supabase = await createClient();
 
   const { error } = await supabase.from("cantieri_tecnici").delete().match({
-    cantiere_id,
+    cantieri_id: cantiere_id,
     tecnici_id: tecnico_id,
   });
 

@@ -19,8 +19,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SlidersHorizontal } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { SlidersHorizontal, Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
+import { deleteCantiere } from "../actions";
 
 type Cantiere = Tables<"cantieri">;
 
@@ -30,12 +32,16 @@ interface CantieriTableProps {
 
 const CantieriTable: React.FC<CantieriTableProps> = ({ data }) => {
   const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const cantiereKeys = Object.keys(data[0] || {}) as Array<keyof Cantiere>;
   const columnHelper = createColumnHelper<Cantiere>();
 
+  // We now handle deletion directly in the button onClick handler
+
   const columns = useMemo(() => {
-    return cantiereKeys.map((key) =>
+    // Create basic columns from cantiere keys
+    const basicColumns = cantiereKeys.map((key) =>
       columnHelper.accessor(key, {
         header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " "),
         cell: (info) => {
@@ -47,7 +53,93 @@ const CantieriTable: React.FC<CantieriTableProps> = ({ data }) => {
         },
       }),
     );
-  }, []);
+
+    // Add actions column
+    const actionsColumn = columnHelper.display({
+      id: "actions",
+      header: "Azioni",
+      cell: ({ row }) => {
+        const cantiere = row.original;
+        const isDeleting = deletingId === cantiere.id;
+        
+        return (
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/cantieri/${cantiere.id}`);
+              }}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/cantieri/${cantiere.id}/edit`);
+              }}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Questa azione non può essere annullata. Questo eliminerà
+                    permanentemente il cantiere "{cantiere.nome}" e tutti i
+                    dati associati.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onClick={async () => {
+                      setDeletingId(cantiere.id);
+                      try {
+                        const formData = new FormData();
+                        formData.append("id", cantiere.id);
+                        const result = await deleteCantiere(formData);
+                        if (result.success) {
+                          router.refresh();
+                        }
+                      } catch (error) {
+                        console.error("Error deleting cantiere:", error);
+                      } finally {
+                        setDeletingId(null);
+                      }
+                    }}
+                  >
+                    {isDeleting ? "Eliminazione..." : "Elimina"}
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        );
+      },
+    });
+
+    return [...basicColumns, actionsColumn];
+  }, [deletingId, router, cantiereKeys]);
 
   const defaultVisibility = cantiereKeys.reduce(
     (acc, key) => ({
@@ -62,6 +154,7 @@ const CantieriTable: React.FC<CantieriTableProps> = ({ data }) => {
     nome: true,
     cliente_id: true,
     created_at: true,
+    actions: true,
   });
 
   const table = useReactTable({
@@ -90,16 +183,21 @@ const CantieriTable: React.FC<CantieriTableProps> = ({ data }) => {
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>Seleziona colonne</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {table.getAllLeafColumns().map((column) => (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                className="capitalize"
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {column.id.replace(/_/g, " ")}
-              </DropdownMenuCheckboxItem>
-            ))}
+            {table.getAllLeafColumns().map((column) => {
+              // Skip the actions column in the dropdown
+              if (column.id === "actions") return null;
+              
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id.replace(/_/g, " ")}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
